@@ -9,24 +9,31 @@ public class MinimumSpanningTree {
 
     public static Graph MST(Graph graph) {
         // This method returns the MST of a graph.
-        int[] parents = graph.getNodes();
-        int[] sizes = new int[graph.getNodes().length];
-        int i;
-        for (i = 0; i < sizes.length; i++)
-            sizes[i] = 1;
+
 
         // 1- Sorting the edges by their values.
         ArrayList<Edge> sortedEdges = graph.getSortedEdges();
         ArrayList<Edge> seenEdges = new ArrayList<Edge>();
 
         // 2- Union-By-Size
-        boolean done = false;
-        Union u = new Union(graph.getNodes().length);
-        for (i = 0; i < sortedEdges.size() && !done; i++) {
-            done = u.unionBySize(u, sortedEdges.get(i).getA(), sortedEdges.get(i).getB());
+        // Initializing sizes array:
+        int[] sizes = new int[graph.getNodes().length];
+        int i;
+        for (i = 0; i < sizes.length; i++)
+            sizes[i] = 1;
+        // The union object contains patterns array and sizes array (patterns array comes from graph.getNodes().)
+        Union u = new Union(graph.getNodes(), sizes);
+        EdgeStatus status = EdgeStatus.notSeen; // To see if all nodes are seen.
+        Edge currentEdge; // Used in for to make the code cleaner.
+        // Union-By-Size iteration:
+        for (i = 0; i < sortedEdges.size() && !(status == EdgeStatus.last); i++) {
+            currentEdge = sortedEdges.get(i);
+            status = u.unionBySize(u, currentEdge.getA(), currentEdge.getB());
+            if (status != EdgeStatus.notSeen)
+                seenEdges.add(currentEdge);
         }
 
-        // 3- Making the MST
-        return null;
+        // 3- Making the MST and returning
+        return new Graph(graph.getNodes().length, seenEdges);
     }
 }
