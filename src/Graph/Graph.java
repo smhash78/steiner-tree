@@ -2,6 +2,8 @@ package Graph;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class Graph {
     private int[] nodes;
@@ -46,9 +48,11 @@ public class Graph {
         this.edges.add(newEdge);
     }
 
-
-
-
+    public ArrayList<Edge> getSortedEdges() {
+        ArrayList<Edge> sortedEdges = this.getEdges();
+        sortedEdges.sort(new SortEdgesByValue());
+        return sortedEdges;
+    }
 
     public int[] getNodes() {
         return nodes;
