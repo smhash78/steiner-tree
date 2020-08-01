@@ -1,21 +1,19 @@
 import Graph.Graph;
-import Steiner.MinimumSpanningTree;
+
+import static File.Read.fileToGraph;
 
 public class Main {
 
-    public static void main(String[] args) {
-        Graph g = new Graph(6);
-        g.addEdge(0, 1, 4);
-        g.addEdge(0, 2, 3);
-        g.addEdge(1, 2, 1);
-        g.addEdge(1, 3, 2);
-        g.addEdge(2, 3, 4);
-        g.addEdge(3, 4, 2);
-        g.addEdge(4 , 5, 6);
+    public static void main(String[] args) throws Exception {
+        Graph g = fileToGraph("G:/Semester 4/Data Structure (Dr Keshtkaran)/Project/SteinerTree/src/file.txt");
+        Graph h = fileToGraph("G:/Semester 4/Data Structure (Dr Keshtkaran)/Project/SteinerTree/src/file2.txt");
 
 
-        System.out.println(g);
-        System.out.println(g.getSortedEdges());
-        System.out.println(MinimumSpanningTree.MST(g));
+        //System.out.println(g);
+        //System.out.println("1 " + g.showNodes());
+        System.out.println(g.MST());
+        //System.out.println("2 " + h.showNodes());
+        //System.out.println(g);
+        System.out.println(h.MST());
     }
 }

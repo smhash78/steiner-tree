@@ -1,4 +1,6 @@
-package Steiner;
+package Graph.Steiner;
+
+import java.util.Arrays;
 
 public class Union {
     private int[] parents;
@@ -21,7 +23,7 @@ public class Union {
         return parents[x] = find(parent);
     }
 
-    public EdgeStatus unionBySize(Union u, int a, int b) {
+    public EdgeStatus unionBySize(int a, int b) {
         int aRoot = find(a);
         int bRoot = find(b);
         if (aRoot == bRoot)
@@ -36,5 +38,13 @@ public class Union {
         if (sizes[aRoot] == parents.length) // done
             return EdgeStatus.last;
         return EdgeStatus.middle;
+    }
+
+    @Override
+    public String toString() {
+        return "Union{" +
+                "parents=" + Arrays.toString(parents) +
+                ", sizes=" + Arrays.toString(sizes) +
+                '}';
     }
 }
