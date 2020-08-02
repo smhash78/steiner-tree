@@ -16,13 +16,17 @@ public class Read {
     }
 
     private static int number(String line) {
+        return Integer.parseInt(line.split(" ")[1]) - 1;
+    }
+
+    private static int numberOfNodes(String line) {
         return Integer.parseInt(line.split(" ")[1]);
     }
 
     private static Edge edge(String line) {
         String[] s = line.split(" ");
-        Node a = new Node(Integer.parseInt(s[1]), false);
-        Node b = new Node(Integer.parseInt(s[2]), false);
+        Node a = new Node(Integer.parseInt(s[1]) - 1, false);
+        Node b = new Node(Integer.parseInt(s[2]) - 1, false);
         return new Edge(a, b, Integer.parseInt(s[3]));
     }
 
@@ -40,7 +44,7 @@ public class Read {
                     name = name(line);
                 }
                 else if (line.contains("Nodes")) {
-                    numberOfNodes = number(line);
+                    numberOfNodes = numberOfNodes(line);
                 }
                 else if (line.contains("E")) {
                     edges.add(edge(line));

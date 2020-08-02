@@ -12,6 +12,10 @@ public class Graph {
     private ArrayList<Node> nodes;
 
     // Constructors:
+    public Graph() {
+        name = "";
+    }
+
     public Graph(int numberOfNodes) {
         nodes = new ArrayList<Node>();
         name = "";
@@ -70,11 +74,26 @@ public class Graph {
         return edges().toString();
     }
 
+    public void addNode(Node node) {
+        if (nodes == null) {
+            nodes = new ArrayList<Node>();
+        }
+        if (nodes.contains(node))
+            nodes.remove(node);
+        nodes.add(node);
+    }
+
     public void addEdge(int a, int b, int value) {
         if (!nodesIndices().contains(a) || !nodesIndices().contains(b))
             return;
         Edge newEdge = new Edge(getNodeByIndex(a), getNodeByIndex(b), value);
         addEdgeToNodes(newEdge);
+    }
+
+    public boolean hasNode(Node node) {
+        if (nodes == null)
+            return false;
+        return nodesIndices().contains(node.getIndex());
     }
 
     public ArrayList<Edge> getSortedEdges() {
@@ -93,7 +112,6 @@ public class Graph {
 
     public Graph MST() throws Exception {
         // This method returns the MST of a graph.
-
 
         // 1- Sorting the edges by their values.
         ArrayList<Edge> sortedEdges = getSortedEdges();
@@ -151,14 +169,17 @@ public class Graph {
         for (i = 0; i < sortedEdges.size(); i++) {
             currentEdge = sortedEdges.get(i);
             removeEdge(currentEdge);
-            aTree = makeSubGraphByNode(currentEdge.getA());
-            bTree = makeSubGraphByNode(currentEdge.getB());
+            // TODO
+            aTree = DFS(getNodeByIndex(currentEdge.getA().getIndex()));
+            bTree = DFS(getNodeByIndex(currentEdge.getB().getIndex()));
+
             if (aTree.getTerminals().size() == 0) {
                 return bTree.steiner();
             }
             if (bTree.getTerminals().size() == 0) {
                 return aTree.steiner();
             }
+            addEdgeToNodes(currentEdge);
         }
         return this;
     }
@@ -167,42 +188,37 @@ public class Graph {
         int i;
         for (i = 0; i < nodes.size(); i++) {
             if (nodes.get(i).getEdges().contains(edge))
-                nodes.get(i).getEdges().remove(edge);
+                nodes.get(i).removeEdge(edge);
         }
     }
 
-    public Graph DFS(Node node, ArrayList<Node> seenNodes) {
-        ArrayList<Integer> terminals = new ArrayList<>();
+
+    public Graph DFS(Node node) {
+        Graph dfsGraph = new Graph();
         Stack<Node> s = new Stack<Node>();
         s.push(node);
         int i;
         while (!s.isEmpty()) {
             Node n = s.pop();
-            if (!seenNodes.contains(getNodeByIndex(n.getIndex()))) {
-                seenNodes.add(n);
-                if (n.isTerminal())
-                    terminals.add(n.getIndex());
+            if (!(dfsGraph.hasNode(n))) {
+                dfsGraph.addNode(n);
                 for (i = 0; i < n.getEdges().size(); i++) {
-                    if (!seenNodes.contains(n.getEdges().get(i).getA())) {
-                        s.push(n.getEdges().get(i).getA());
+                    if (!dfsGraph.hasNode(n.getEdges().get(i).getA())) {
+                        s.push(getNodeByIndex(n.getEdges().get(i).getA().getIndex()));
                     }
-                    else if (!seenNodes.contains(n.getEdges().get(i).getB())) {
-                        s.push(n.getEdges().get(i).getB());
+                    else if (!dfsGraph.hasNode(n.getEdges().get(i).getB())) {
+                        s.push(getNodeByIndex(n.getEdges().get(i).getB().getIndex()));
                     }
                 }
             }
         }
-        int[] terminalsArray = new int[terminals.size()];
-        for (i = 0; i < terminals.size(); i++) {
-            terminalsArray[i] = terminals.get(i);
-        }
-        return new Graph(seenNodes);
+
+        return dfsGraph;
     }
-//
     public Graph makeSubGraphByNode(Node node) {
         ArrayList<Node> seenNodes = new ArrayList<Node>();
 
-        return DFS(node, seenNodes);
+        return DFS(node);
     }
 
 

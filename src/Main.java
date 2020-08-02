@@ -8,9 +8,12 @@ public class Main {
         Graph g = fileToGraph("G:/Semester 4/Data Structure (Dr Keshtkaran)/Project/SteinerTree/src/file2.txt");
 
 
-        System.out.println(g);
-        System.out.println(g.MST());
-        //System.out.println(g.MST().steiner());
+
+//
+//        System.out.println(g);
+        g = g.MST();
+        //System.out.println(g.getNodes().get(1).getEdges());
+        System.out.println(g.steiner());
 
 
     }
