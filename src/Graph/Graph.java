@@ -4,7 +4,6 @@ import Graph.Steiner.EdgeStatus;
 import Graph.Steiner.Union;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Stack;
 
 public class Graph {
@@ -151,25 +150,25 @@ public class Graph {
     }
 
     public Graph steiner() throws Exception {
-        // This method uses the simplest (Exhaustive) way to make Steiner Tree.
-        // For all edges (sorted reversely by their values), it omits edge, and calculates the MST.
+        // For all edges , the method removes edge.
         // The tree will be divided into two subtrees.
-        // If one of them contains zero terminals, the algorithm will be continued with the other one;
-        // Otherwise the omitted edge will turned back.
-        // If the terminals of new tree is equal to the graph, it continues,
-        // otherwise it turns back the omitted edge and continues.
-        ArrayList<Edge> sortedEdges = getSortedEdges();
-        Collections.reverse(sortedEdges);
+        // The subtrees are retrieved using DFS and stack of nodes.
+        // If one of the subtrees contains zero terminals, the algorithm will be continued with the other one;
+        // Otherwise the removed edge will turn back to the tree.
+        // The algorithm continues until it passes all of the edges.
+
+        ArrayList<Edge> sortedEdges = edges();
+        // Collections.reverse(sortedEdges);
+        // Sorting the edges will cost 20 times more time for the same result!
         if (sortedEdges.size() == 0) {
             return this;
         }
-        Graph aTree, bTree, result = this;
+        Graph aTree, bTree;
         Edge currentEdge;
         int i;
         for (i = 0; i < sortedEdges.size(); i++) {
             currentEdge = sortedEdges.get(i);
             removeEdge(currentEdge);
-            // TODO
             aTree = DFS(getNodeByIndex(currentEdge.getA().getIndex()));
             bTree = DFS(getNodeByIndex(currentEdge.getB().getIndex()));
 
@@ -191,7 +190,6 @@ public class Graph {
                 nodes.get(i).removeEdge(edge);
         }
     }
-
 
     public Graph DFS(Node node) {
         Graph dfsGraph = new Graph();
@@ -215,18 +213,11 @@ public class Graph {
 
         return dfsGraph;
     }
-    public Graph makeSubGraphByNode(Node node) {
-        ArrayList<Node> seenNodes = new ArrayList<Node>();
-
-        return DFS(node);
-    }
-
 
     public void addEdgeToNodes(Edge edge) {
         getNodeByIndex(edge.getA().getIndex()).addEdge(edge);
         getNodeByIndex(edge.getB().getIndex()).addEdge(edge);
     }
-
 
     public void addEdgesToNodes(ArrayList<Edge> edges) {
         int i;
@@ -252,8 +243,6 @@ public class Graph {
         }
         return null;
     }
-
-
 
     public ArrayList<Integer> getTerminals() {
         ArrayList<Integer> terminals = new ArrayList<>();
@@ -293,8 +282,6 @@ public class Graph {
         }
     }
 
-
-    // TODO
     public String showNodes() {
         String res = "[";
         int i;
@@ -319,7 +306,5 @@ public class Graph {
     public void setNodes(ArrayList<Node> nodes) {
         this.nodes = nodes;
     }
-
-
 
 }

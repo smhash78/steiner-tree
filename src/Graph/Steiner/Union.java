@@ -6,11 +6,6 @@ public class Union {
     private int[] parents;
     private int[] sizes;
 
-    public Union(int length) {
-        parents = new int[length];
-        sizes = new int[length];
-    }
-
     public Union(int[] parents, int[] sizes) {
         this.parents = parents;
         this.sizes = sizes;
