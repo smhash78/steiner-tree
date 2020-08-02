@@ -2,6 +2,7 @@ package File;
 
 import Graph.Graph;
 import Graph.Edge;
+import Graph.Node;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -20,7 +21,9 @@ public class Read {
 
     private static Edge edge(String line) {
         String[] s = line.split(" ");
-        return new Edge(Integer.parseInt(s[1]), Integer.parseInt(s[2]), Integer.parseInt(s[3]));
+        Node a = new Node(Integer.parseInt(s[1]), false);
+        Node b = new Node(Integer.parseInt(s[2]), false);
+        return new Edge(a, b, Integer.parseInt(s[3]));
     }
 
     public static Graph fileToGraph(String filename) throws Exception {

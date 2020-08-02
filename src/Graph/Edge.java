@@ -1,11 +1,11 @@
 package Graph;
 
 public class Edge {
-    private int a;
-    private int b;
+    private Node a;
+    private Node b;
     private int value;
 
-    public Edge(int a, int b, int value) {
+    public Edge(Node a, Node b, int value) {
         this.a = a;
         this.b = b;
         this.value = value;
@@ -16,19 +16,19 @@ public class Edge {
         return "(" + a + ", " + b + ", " + value + ")";
     }
 
-    public int getA() {
+    public Node getA() {
         return a;
     }
 
-    public void setA(int a) {
+    public void setA(Node a) {
         this.a = a;
     }
 
-    public int getB() {
+    public Node getB() {
         return b;
     }
 
-    public void setB(int b) {
+    public void setB(Node b) {
         this.b = b;
     }
 

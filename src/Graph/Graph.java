@@ -7,24 +7,34 @@ import java.util.ArrayList;
 
 public class Graph {
     private String name;
-    private int[] nodes;
+    private Node[] nodes;
     private int[] terminals;
     private ArrayList<Edge> edges;
 
     // Constructors:
     public Graph(int numberOfNodes) {
-        nodes = new int[numberOfNodes];
+        nodes = new Node[numberOfNodes];
         edges = new ArrayList<Edge>();
         name = "";
 
         int i;
-        for (i = 0; i < numberOfNodes; i++)
-            nodes[i] = i;
+        for (i = 0; i < numberOfNodes; i++) {
+            Node n = new Node(i, false);
+            nodes[i] = n;
+        }
     }
 
     public Graph(int numberOfNodes, ArrayList<Edge> edges) {
         this(numberOfNodes);
         this.edges = edges;
+        addEdgesToNodes(edges);
+    }
+
+    public Graph(int numberOfNodes, ArrayList<Edge> edges, int[] terminals) throws Exception {
+        this(numberOfNodes);
+        this.edges = edges;
+        addEdgesToNodes(edges);
+        setTerminals(terminals);
     }
 
     public Graph(String name, int numberOfNodes, ArrayList<Edge> edges, ArrayList<Integer> terminals) throws Exception {
@@ -37,15 +47,18 @@ public class Graph {
         name = "";
         if (as.length != bs.length)
             return;
-        nodes = new int[numberOfNodes];
+        nodes = new Node[numberOfNodes];
 
         int i;
-        for (i = 0; i < numberOfNodes; i++)
-            nodes[i] = i;
+        for (i = 0; i < numberOfNodes; i++) {
+            Node n = new Node(i, false);
+            nodes[i] = n;
+        }
 
         for (i = 0; i < as.length; i++) {
             addEdge(as[i], bs[i], values[i]);
         }
+        addEdgesToNodes(edges);
     }
 
     public Graph(int numberOfNodes, int[] as, int[] bs, int[] values, int[] terminals) throws Exception {
@@ -67,8 +80,9 @@ public class Graph {
     public void addEdge(int a, int b, int value) {
         if (a > nodes.length || b > nodes.length)
             return;
-        Edge newEdge = new Edge(a, b, value);
+        Edge newEdge = new Edge(nodes[a], nodes[b], value);
         edges.add(newEdge);
+        addEdgeToNodes(newEdge);
     }
 
     public ArrayList<Edge> getSortedEdges() {
@@ -84,7 +98,7 @@ public class Graph {
         return res;
     }
 
-    public Graph MST() {
+    public Graph MST() throws Exception {
         // This method returns the MST of a graph.
 
 
@@ -101,7 +115,11 @@ public class Graph {
             sizes[i] = 1;
 
         // The union object contains patterns array and sizes array (patterns array comes from graph.getNodes().)
-        Union u = new Union(nodes, sizes);
+        int[] nodesIndices = new int[nodes.length];
+        for (i = 0; i < nodes.length; i++) {
+            nodesIndices[i] = nodes[i].getIndex();
+        }
+        Union u = new Union(nodesIndices, sizes);
 
         EdgeStatus status = EdgeStatus.notSeen; // To see if all nodes are seen.
         Edge currentEdge; // Used in for to make the code cleaner.
@@ -110,19 +128,18 @@ public class Graph {
         for (i = 0; i < sortedEdges.size() && !(status == EdgeStatus.last); i++) {
 
             currentEdge = sortedEdges.get(i);
-            status = u.unionBySize(currentEdge.getA(), currentEdge.getB());
+            status = u.unionBySize(currentEdge.getA().getIndex(), currentEdge.getB().getIndex());
             if (status != EdgeStatus.notSeen) {
                 seenEdges.add(currentEdge);
-
             }
         }
         // 3- Making the MST and returning
 
-        return new Graph(nodes.length, seenEdges);
+        return new Graph(nodes.length, seenEdges, this.terminals);
     }
 
-    public Graph steiner() {
-        // This method uses the simplest way (Exhaustive) to make Steiner Tree.
+    public Graph steiner() throws Exception {
+        // This method uses the simplest (Exhaustive) way to make Steiner Tree.
         // For all edges, it omits edge, and calculates the MST.
         // If the terminals of new tree is equal to the graph, it continues,
         // otherwise it turns back the omitted edge and continues.
@@ -140,11 +157,30 @@ public class Graph {
         return newTree;
     }
 
-    public int[] getNodes() {
+
+    public void addEdgeToNodes(Edge edge) {
+        nodes[edge.getA().getIndex()].addEdge(edge);
+        nodes[edge.getB().getIndex()].addEdge(edge);
+    }
+
+
+    public void addEdgesToNodes(ArrayList<Edge> edges) {
+        int i;
+        for (i = 0; i < edges.size(); i++) {
+            addEdgeToNodes(edges.get(i));
+        }
+    }
+
+    public boolean isConnected() {
+        
+
+    }
+
+    public Node[] getNodes() {
         return nodes;
     }
 
-    public void setNodes(int[] nodes) {
+    public void setNodes(Node[] nodes) {
         this.nodes = nodes;
     }
 
@@ -154,6 +190,7 @@ public class Graph {
 
     public void setEdges(ArrayList<Edge> edges) {
         this.edges = edges;
+        addEdgesToNodes(edges);
     }
 
     public String getName() {
@@ -169,20 +206,38 @@ public class Graph {
     }
 
     public void setTerminals(int[] terminals) throws Exception {
+        this.terminals = new int[terminals.length];
         int i;
         for (i = 0; i < terminals.length; i++) {
             if (terminals[i] < 0 || terminals[i] >= nodes.length)
                 throw new Exception(name + ") terminals[" + i + "] = " + terminals[i] + " is not in nodes.");
             this.terminals[i] = terminals[i];
+            nodes[this.terminals[i]].setTerminal(true);
+            addTerminalToEdges(this.terminals[i]);
         }
     }
 
     public void setTerminals(ArrayList<Integer> terminals) throws Exception {
+        this.terminals = new int[terminals.size()];
         int i;
         for (i = 0; i < terminals.size(); i++) {
             if (terminals.get(i) < 0 || terminals.get(i) >= nodes.length)
                 throw new Exception(name + ") terminals[" + i + "] = " + terminals.get(i) + " is not in nodes.");
             this.terminals[i] = terminals.get(i);
+            nodes[this.terminals[i]].setTerminal(true);
+            addTerminalToEdges(this.terminals[i]);
+        }
+    }
+
+    public void addTerminalToEdges(int n) {
+        int i;
+        for (i = 0; i < edges.size(); i++) {
+            if (edges.get(i).getA().getIndex() == n) {
+                edges.get(i).getA().setTerminal(true);
+            }
+            if (edges.get(i).getB().getIndex() == n) {
+                edges.get(i).getB().setTerminal(true);
+            }
         }
     }
 
@@ -191,7 +246,7 @@ public class Graph {
         String res = "[";
         int i;
         for (i = 0; i < nodes.length; i++) {
-            res += Integer.toString(nodes[i]) + ", ";
+            res += nodes[i] + ", ";
         }
         return res + "]";
     }
