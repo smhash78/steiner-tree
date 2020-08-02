@@ -121,6 +121,25 @@ public class Graph {
         return new Graph(nodes.length, seenEdges);
     }
 
+    public Graph steiner() {
+        // This method uses the simplest way (Exhaustive) to make Steiner Tree.
+        // For all edges, it omits edge, and calculates the MST.
+        // If the terminals of new tree is equal to the graph, it continues,
+        // otherwise it turns back the omitted edge and continues.
+
+        Edge edge;
+        Graph newTree = null;
+        int i;
+        for (i = 0; i < edges.size(); i++) {
+            edge = edges.get(i);
+            edges.remove(edge);
+            newTree = this.MST();
+            if (!(newTree.getTerminals().equals(this.terminals)))
+                edges.add(edge);
+        }
+        return newTree;
+    }
+
     public int[] getNodes() {
         return nodes;
     }
@@ -176,8 +195,5 @@ public class Graph {
         }
         return res + "]";
     }
-
-
-
 
 }
