@@ -4,6 +4,7 @@ import Graph.Steiner.EdgeStatus;
 import Graph.Steiner.Union;
 
 import java.util.ArrayList;
+import java.util.Stack;
 
 public class Graph {
     private String name;
@@ -145,16 +146,68 @@ public class Graph {
         // otherwise it turns back the omitted edge and continues.
 
         Edge edge;
-        Graph newTree = null;
+        Graph result = this, aTree = null, bTree = null;
         int i;
-        for (i = 0; i < edges.size(); i++) {
-            edge = edges.get(i);
-            edges.remove(edge);
-            newTree = this.MST();
-            if (!(newTree.getTerminals().equals(this.terminals)))
-                edges.add(edge);
+        for (i = 0; i < result.edges.size(); i++) {
+            edge = result.edges.get(i);
+            result.edges.remove(edge);
+            removeEdgeFromNodes(edge);
+            aTree = makeSubGraphByNode(edge.getA());
+            bTree = makeSubGraphByNode(edge.getB());
+            if (aTree.getTerminals().length == 0)
+                result = bTree;
+            else if (bTree.getTerminals().length == 0)
+                result = aTree;
         }
-        return newTree;
+        return result;
+    }
+
+    public void removeEdgeFromNodes(Edge edge) {
+        Node currentNode;
+        int i;
+        for (i = 0; i < nodes.length; i++) {
+            if (nodes[i].getEdges().contains(edge))
+                nodes[i].getEdges().remove(edge);
+        }
+    }
+
+    public Graph DFS(Node node, Node[] seenNodes, ArrayList<Edge> seenEdges) throws Exception {
+        ArrayList<Integer> terminals = new ArrayList<>();
+        Stack<Node> s = new Stack<Node>();
+        s.push(node);
+        int i;
+        while (!s.isEmpty()) {
+            Node n = s.pop();
+            if (seenNodes[n.getIndex()] == null) {
+                seenNodes[n.getIndex()] = n;
+                if (n.isTerminal())
+                    terminals.add(n.getIndex());
+                for (i = 0; i < n.getEdges().size(); i++) {
+                    if (seenNodes[n.getEdges().get(i).getA().getIndex()] == null) {
+                        s.push(n.getEdges().get(i).getA());
+                    }
+                    else if (seenNodes[n.getEdges().get(i).getB().getIndex()] == null) {
+                        s.push(n.getEdges().get(i).getB());
+                    }
+                    seenEdges.add(n.getEdges().get(i));
+                }
+            }
+        }
+        int[] allTerminals = new int[terminals.size()];
+        for (i = 0; i < terminals.size(); i++) {
+            allTerminals[i] = terminals.get(i);
+        }
+        return new Graph(seenNodes.length,  seenEdges, allTerminals);
+    }
+
+    public Graph makeSubGraphByNode(Node node) throws Exception {
+        Node[] seenNodes = new Node[nodes.length];
+        ArrayList<Edge> seenEdges = new ArrayList<Edge>();
+        int i;
+        for (i = 0; i < nodes.length; i++) {
+            seenNodes[i] = null;
+        }
+        return DFS(node, seenNodes, seenEdges);
     }
 
 
@@ -169,11 +222,6 @@ public class Graph {
         for (i = 0; i < edges.size(); i++) {
             addEdgeToNodes(edges.get(i));
         }
-    }
-
-    public boolean isConnected() {
-        
-
     }
 
     public Node[] getNodes() {

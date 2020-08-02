@@ -38,4 +38,12 @@ public class Node {
     public void setTerminal(boolean terminal) {
         isTerminal = terminal;
     }
+
+    public ArrayList<Edge> getEdges() {
+        return edges;
+    }
+
+    public void setEdges(ArrayList<Edge> edges) {
+        this.edges = edges;
+    }
 }
