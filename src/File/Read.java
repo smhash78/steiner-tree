@@ -32,6 +32,7 @@ public class Read {
 
     public static Graph fileToGraph(String filename) throws Exception {
         try {
+            filename = "files/in/" + filename + ".stp";
             File file = new File(filename);
             Scanner reader = new Scanner(file);
             String line, name = "";
@@ -46,10 +47,10 @@ public class Read {
                 else if (line.contains("Nodes")) {
                     numberOfNodes = numberOfNodes(line);
                 }
-                else if (line.contains("E")) {
+                else if (line.contains("E ")) {
                     edges.add(edge(line));
                 }
-                else if (line.contains("T")) {
+                else if (line.contains("T ")) {
                     terminals.add(number(line));
                 }
             }
