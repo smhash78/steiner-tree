@@ -10,7 +10,7 @@ public class Main {
 
         System.out.println(g);
         System.out.println(g.MST());
-        System.out.println(g.MST().steiner());
+        //System.out.println(g.MST().steiner());
 
 
     }
