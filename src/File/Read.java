@@ -52,7 +52,14 @@ public class Read {
             if (name == "" || numberOfNodes == 0) {
                 throw new Exception("Wrong file format.");
             }
-            Graph graph = new Graph(name, numberOfNodes, edges, terminals);
+            ArrayList<Node> nodes = new ArrayList<Node>();
+            int i;
+            for (i = 0; i < numberOfNodes; i++) {
+                Node n = new Node(i, terminals.contains(i));
+                nodes.add(n);
+            }
+            Graph graph = new Graph(name, nodes);
+            graph.addEdgesToNodes(edges);
             reader.close();
             return graph;
 

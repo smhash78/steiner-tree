@@ -4,12 +4,12 @@ import Graph.Steiner.EdgeStatus;
 import Graph.Steiner.Union;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Stack;
 
 public class Graph {
     private String name;
     private ArrayList<Node> nodes;
-    private int[] terminals;
 
     // Constructors:
     public Graph(int numberOfNodes) {
@@ -43,6 +43,7 @@ public class Graph {
 
     public Graph(ArrayList<Node> nodes) {
         this.nodes = nodes;
+        name = "";
     }
 
     public Graph(String name, ArrayList<Node> nodes) {
@@ -73,8 +74,7 @@ public class Graph {
         if (!nodesIndices().contains(a) || !nodesIndices().contains(b))
             return;
         Edge newEdge = new Edge(getNodeByIndex(a), getNodeByIndex(b), value);
-        newEdge.getA().addEdge(newEdge);
-        newEdge.getB().addEdge(newEdge);
+        addEdgeToNodes(newEdge);
     }
 
     public ArrayList<Edge> getSortedEdges() {
@@ -128,33 +128,42 @@ public class Graph {
         }
         // 3- Making the MST and returning
 
-        return new Graph(nodes.size(), seenEdges, this.terminals);
+
+        return new Graph(nodes.size(), seenEdges, getTerminalsArray());
     }
 
-//    public Graph steiner() throws Exception {
-//        // This method uses the simplest (Exhaustive) way to make Steiner Tree.
-//        // For all edges, it omits edge, and calculates the MST.
-//        // If the terminals of new tree is equal to the graph, it continues,
-//        // otherwise it turns back the omitted edge and continues.
-//
-//        Edge edge;
-//        Graph result = this, aTree = null, bTree = null;
-//        int i;
-//        for (i = 0; i < result.edges.size(); i++) {
-//            edge = result.edges.get(i);
-//            result.edges.remove(edge);
-//            removeEdgeFromNodes(edge);
-//            aTree = makeSubGraphByNode(edge.getA());
-//            bTree = makeSubGraphByNode(edge.getB());
-//            if (aTree.getTerminals().length == 0)
-//                result = bTree;
-//            else if (bTree.getTerminals().length == 0)
-//                result = aTree;
-//        }
-//        return result;
-//    }
+    public Graph steiner() throws Exception {
+        // This method uses the simplest (Exhaustive) way to make Steiner Tree.
+        // For all edges (sorted reversely by their values), it omits edge, and calculates the MST.
+        // The tree will be divided into two subtrees.
+        // If one of them contains zero terminals, the algorithm will be continued with the other one;
+        // Otherwise the omitted edge will turned back.
+        // If the terminals of new tree is equal to the graph, it continues,
+        // otherwise it turns back the omitted edge and continues.
+        ArrayList<Edge> sortedEdges = getSortedEdges();
+        Collections.reverse(sortedEdges);
+        if (sortedEdges.size() == 0) {
+            return this;
+        }
+        Graph aTree, bTree, result = this;
+        Edge currentEdge;
+        int i;
+        for (i = 0; i < sortedEdges.size(); i++) {
+            currentEdge = sortedEdges.get(i);
+            removeEdge(currentEdge);
+            aTree = makeSubGraphByNode(currentEdge.getA());
+            bTree = makeSubGraphByNode(currentEdge.getB());
+            if (aTree.getTerminals().size() == 0) {
+                return bTree.steiner();
+            }
+            if (bTree.getTerminals().size() == 0) {
+                return aTree.steiner();
+            }
+        }
+        return this;
+    }
 
-    public void removeEdgeFromNodes(Edge edge) {
+    public void removeEdge(Edge edge) {
         int i;
         for (i = 0; i < nodes.size(); i++) {
             if (nodes.get(i).getEdges().contains(edge))
@@ -162,44 +171,39 @@ public class Graph {
         }
     }
 
-//    public Graph DFS(Node node, Node[] seenNodes, ArrayList<Edge> seenEdges) throws Exception {
-//        ArrayList<Integer> terminals = new ArrayList<>();
-//        Stack<Node> s = new Stack<Node>();
-//        s.push(node);
-//        int i;
-//        while (!s.isEmpty()) {
-//            Node n = s.pop();
-//            if (seenNodes[n.getIndex()] == null) {
-//                seenNodes[n.getIndex()] = n;
-//                if (n.isTerminal())
-//                    terminals.add(n.getIndex());
-//                for (i = 0; i < n.getEdges().size(); i++) {
-//                    if (seenNodes[n.getEdges().get(i).getA().getIndex()] == null) {
-//                        s.push(n.getEdges().get(i).getA());
-//                    }
-//                    else if (seenNodes[n.getEdges().get(i).getB().getIndex()] == null) {
-//                        s.push(n.getEdges().get(i).getB());
-//                    }
-//                    seenEdges.add(n.getEdges().get(i));
-//                }
-//            }
-//        }
-//        int[] allTerminals = new int[terminals.size()];
-//        for (i = 0; i < terminals.size(); i++) {
-//            allTerminals[i] = terminals.get(i);
-//        }
-//        return new Graph(seenNodes.length,  seenEdges, allTerminals);
-//    }
+    public Graph DFS(Node node, ArrayList<Node> seenNodes) {
+        ArrayList<Integer> terminals = new ArrayList<>();
+        Stack<Node> s = new Stack<Node>();
+        s.push(node);
+        int i;
+        while (!s.isEmpty()) {
+            Node n = s.pop();
+            if (!seenNodes.contains(getNodeByIndex(n.getIndex()))) {
+                seenNodes.add(n);
+                if (n.isTerminal())
+                    terminals.add(n.getIndex());
+                for (i = 0; i < n.getEdges().size(); i++) {
+                    if (!seenNodes.contains(n.getEdges().get(i).getA())) {
+                        s.push(n.getEdges().get(i).getA());
+                    }
+                    else if (!seenNodes.contains(n.getEdges().get(i).getB())) {
+                        s.push(n.getEdges().get(i).getB());
+                    }
+                }
+            }
+        }
+        int[] terminalsArray = new int[terminals.size()];
+        for (i = 0; i < terminals.size(); i++) {
+            terminalsArray[i] = terminals.get(i);
+        }
+        return new Graph(seenNodes);
+    }
 //
-//    public Graph makeSubGraphByNode(Node node) throws Exception {
-//        Node[] seenNodes = new Node[nodes.length];
-//        ArrayList<Edge> seenEdges = new ArrayList<Edge>();
-//        int i;
-//        for (i = 0; i < nodes.length; i++) {
-//            seenNodes[i] = null;
-//        }
-//        return DFS(node, seenNodes, seenEdges);
-//    }
+    public Graph makeSubGraphByNode(Node node) {
+        ArrayList<Node> seenNodes = new ArrayList<Node>();
+
+        return DFS(node, seenNodes);
+    }
 
 
     public void addEdgeToNodes(Edge edge) {
@@ -234,25 +238,42 @@ public class Graph {
     }
 
 
-    public void setTerminals(int[] terminals) throws Exception {
-        this.terminals = new int[terminals.length];
+
+    public ArrayList<Integer> getTerminals() {
+        ArrayList<Integer> terminals = new ArrayList<>();
         int i;
-        for (i = 0; i < terminals.length; i++) {
-            if (terminals[i] < 0)
-                throw new Exception(name + ") terminals[" + i + "] = " + terminals[i] + " is not in nodes.");
-            this.terminals[i] = terminals[i];
-            getNodeByIndex(this.terminals[i]).setTerminal(true);
+        for (i = 0; i < nodes.size(); i++) {
+            if (nodes.get(i).isTerminal())
+                terminals.add(nodes.get(i).getIndex());
         }
+        return terminals;
+    }
+
+    public int[] getTerminalsArray() {
+        ArrayList<Integer> terminals = getTerminals();
+        int[] terminalsArray = new int[terminals.size()];
+        int i;
+        for (i = 0; i < terminals.size(); i++) {
+            terminalsArray[i] = terminals.get(i);
+        }
+        return terminalsArray;
     }
 
     public void setTerminals(ArrayList<Integer> terminals) throws Exception {
-        this.terminals = new int[terminals.size()];
         int i;
         for (i = 0; i < terminals.size(); i++) {
             if (terminals.get(i) < 0)
                 throw new Exception(name + ") terminals[" + i + "] = " + terminals.get(i) + " is not in nodes.");
-            this.terminals[i] = terminals.get(i);
-            getNodeByIndex(this.terminals[i]).setTerminal(true);
+            getNodeByIndex(terminals.get(i)).setTerminal(true);
+        }
+    }
+
+    public void setTerminals(int[] terminals) throws Exception {
+        int i;
+        for (i = 0; i < terminals.length; i++) {
+            if (terminals[i] < 0)
+                throw new Exception(name + ") terminals[" + i + "] = " + terminals[i] + " is not in nodes.");
+            getNodeByIndex(terminals[i]).setTerminal(true);
         }
     }
 
@@ -266,5 +287,23 @@ public class Graph {
         }
         return res + "]";
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public ArrayList<Node> getNodes() {
+        return nodes;
+    }
+
+    public void setNodes(ArrayList<Node> nodes) {
+        this.nodes = nodes;
+    }
+
+
 
 }
